@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Vendor Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="d-flex vh-100">
+
+    <div class="bg-dark text-white p-4" style="width: 250px;">
+        <h4><a th:href="@{/}">Logo PT</a></h4>
+        <hr>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link text-white" th:href="@{/users}">User Management</a></li>
+            <li class="nav-item"><a class="nav-link text-white" th:href="@{/vendors}">Vendor Management</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#">Purchase Order</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#">Invoice</a></li>
+            <li class="nav-item mt-4"><a class="nav-link text-white" th:href="@{/logout}">Keluar</a></li>
+        </ul>
+    </div>
+
+
+    <div class="flex-grow-1 bg-light p-5">
+        <h2 class="mb-4">Vendor Management</h2>
+
+        <form class="row mb-4 align-items-center" th:action="@{/vendors}" method="get">
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-lg" name="keyword" th:value="${keyword}" placeholder="Cari vendor..."/>
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </div>
+
+            <div class="col-auto ms-auto">
+                <th:block th:if="${canEdit}">
+                    <a class="btn btn-success btn-lg" href="#" id="addVendorBtn">+ Add Vendor</a>
+                </th:block>
+            </div>
+        </form>
+
+        <div class="list-group mb-4">
+            <div class="list-group-item d-flex align-items-center fw-bold border border-1 rounded bg-secondary text-white text-center mb-2">
+                <div style="width: 15%;">Nama Vendor</div>
+                <div style="width: 15%;">Kontak Person</div>
+                <div style="width: 15%;">Email</div>
+                <div style="width: 15%;">Telepon</div>
+                <div style="width: 15%;">NPWP</div>
+                <div style="width: 15%;">NIK</div>
+                <div style="width: 10%;">Aksi</div>
+            </div>
+
+            <th:block th:each="vendor : ${vendors}">
+                <div class="list-group-item d-flex align-items-center order border-1 rounded mb-2">
+                    <div style="width: 15%;" th:text="${vendor.name}">Nama Vendor</div>
+                    <div style="width: 15%;" th:text="${vendor.contactPerson}">Kontak Person</div>
+                    <div style="width: 15%;" th:text="${vendor.email}">Email</div>
+                    <div style="width: 15%;" th:text="${vendor.phoneNumber}">Telepon</div>
+                    <div style="width: 15%;" th:text="${vendor.npwp}">NPWP</div>
+                    <div style="width: 15%;" th:text="${vendor.nik}">NIK</div>
+                    <div style="width: 10%;">
+                        <th:block th:if="${canEdit}">
+                            <a href="#" class="btn btn-sm text-danger me-2"><i class="fas fa-trash"></i></a>
+                            <a href="#" class="btn btn-sm text-primary edit-vendor-btn" th:attr="data-id=${vendor.id}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </th:block>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <nav class="d-flex justify-content-center">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/vendors(page=${currentPage - 1}, keyword=${keyword})}">&lt;</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/vendors(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/vendors(page=${currentPage + 1}, keyword=${keyword})}">&gt;</a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+</div>
+
+<div class="modal fade" id="vendorModal" tabindex="-1" aria-labelledby="vendorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="vendorForm" class="modal-content needs-validation" novalidate method="post" action="/vendors/add">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vendorModalLabel">Tambah Vendor Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="vendorId" name="id">
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nama Vendor</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                    <div class="invalid-feedback">Nama vendor wajib diisi.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="contactPerson" class="form-label">Kontak Person</label>
+                    <input type="text" class="form-control" id="contactPerson" name="contactPerson" required>
+                    <div class="invalid-feedback">Contact person wajib diisi.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="invalid-feedback">Email wajib diisi dan harus valid.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="phoneNumber" class="form-label">Telepon</label>
+                    <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" required>
+                    <div class="invalid-feedback">Nomor telepon wajib diisi.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Alamat</label>
+                    <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                    <div class="invalid-feedback">Alamat wajib diisi.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="npwp" class="form-label">NPWP</label>
+                    <input type="text" class="form-control" id="npwp" name="npwp">
+                </div>
+
+                <div class="mb-3">
+                    <label for="nik" class="form-label">NIK</label>
+                    <input type="text" class="form-control" id="nik" name="nik">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const vendorModal = new bootstrap.Modal(document.getElementById('vendorModal'));
+    const vendorForm = document.getElementById('vendorForm');
+    const vendorIdInput = document.getElementById('vendorId');
+    const modalTitle = document.getElementById('vendorModalLabel');
+
+    // Tombol Add Vendor buka modal
+    document.getElementById('addVendorBtn').addEventListener('click', function(event) {
+        event.preventDefault();
+        clearFormErrors();
+        resetForm();
+        modalTitle.textContent = 'Tambah Vendor Baru';
+        vendorModal.show();
+    });
+
+    // Fungsi clear error
+    function clearFormErrors() {
+        const inputs = document.querySelectorAll('#vendorForm input, #vendorForm textarea');
+        inputs.forEach(i => {
+            i.classList.remove('is-invalid');
+            const feedback = i.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = '';
+            }
+        });
+    }
+
+    // Tombol Edit Vendor buka modal dan isi data
+    document.querySelectorAll('.edit-vendor-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const vendorId = this.dataset.id;
+
+            clearFormErrors();
+            resetForm();
+
+            fetch(`/api/vendors/${vendorId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) throw new Error('Unauthorized');
+                        if (response.status === 403) throw new Error('Forbidden: Anda tidak memiliki akses');
+                        throw new Error('Gagal mengambil data vendor');
+                    }
+                    return response.json();
+                })
+                .then(vendor => {
+                    // Isi form dengan data vendor
+                    document.getElementById('vendorId').value = vendor.id;
+                    document.getElementById('name').value = vendor.name;
+                    document.getElementById('contactPerson').value = vendor.contactPerson || '';
+                    document.getElementById('email').value = vendor.email;
+                    document.getElementById('phoneNumber').value = vendor.phoneNumber || '';
+                    document.getElementById('address').value = vendor.address || '';
+                    document.getElementById('npwp').value = vendor.npwp || '';
+                    document.getElementById('nik').value = vendor.nik || '';
+
+                    modalTitle.textContent = 'Edit Vendor';
+                    vendorModal.show();
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                    console.error('Error fetching vendor:', error);
+                });
+        });
+    });
+
+
+    // Reset form dan validation
+    function resetForm() {
+        vendorForm.reset();
+        vendorForm.classList.remove('was-validated');
+    }
+
+    // Submit form (Add/Edit)
+    vendorForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        if (!vendorForm.checkValidity()) {
+            vendorForm.classList.add('was-validated');
+            return;
+        }
+
+        clearFormErrors();
+
+        const id = document.getElementById('vendorId').value;
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/vendors/edit/${id}` : '/api/vendors/add';
+
+        const data = {
+            id: id || null,
+            name: document.getElementById('name').value.trim(),
+            contactPerson: document.getElementById('contactPerson').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phoneNumber: document.getElementById('phoneNumber').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            npwp: document.getElementById('npwp').value.trim(),
+            nik: document.getElementById('nik').value.trim()
+        };
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(async (response) => {
+            if (response.ok) {
+                return response.text();
+            } else if (response.status === 400) {
+                const errors = await response.json();
+                handleErrors(errors);
+                throw new Error('Validation failed');
+            } else if (response.status === 401) {
+                alert('Anda belum login, silakan login terlebih dahulu.');
+                throw new Error('Unauthorized');
+            } else if (response.status === 403) {
+                alert('Anda tidak memiliki akses untuk tindakan ini.');
+                throw new Error('Forbidden');
+            } else {
+                alert('Terjadi kesalahan server');
+                throw new Error('Server error');
+            }
+        })
+        .then((message) => {
+            alert(message);
+            vendorModal.hide();
+            location.reload();
+        })
+        .catch(error => console.error(error));
+    });
+
+
+    // Tombol Delete Vendor
+    document.querySelectorAll('.delete-vendor-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const vendorId = this.dataset.id;
+            if (confirm('Apakah Anda yakin ingin menghapus vendor ini? Ini juga akan menghapus semua Order terkait!')) {
+                fetch(`/api/vendors/delete/${vendorId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then(async (response) => {
+                    if (response.ok) {
+                        return response.text();
+                    } else if (response.status === 401) {
+                        alert('Anda belum login, silakan login terlebih dahulu.');
+                        throw new Error('Unauthorized');
+                    } else if (response.status === 403) {
+                        alert('Anda tidak memiliki akses untuk menghapus vendor.');
+                        throw new Error('Forbidden');
+                    } else if (response.status === 404) {
+                        alert('Vendor tidak ditemukan.');
+                        throw new Error('Not Found');
+                    } else {
+                        alert('Terjadi kesalahan server');
+                        throw new Error('Server error');
+                    }
+                })
+                .then((message) => {
+                    alert(message);
+                    location.reload();
+                })
+                .catch(error => console.error(error));
+            }
+        });
+    });
+
+    function handleErrors(errors) {
+        for (const [field, msg] of Object.entries(errors)) {
+            const input = document.getElementById(field);
+            if (input) {
+                input.classList.add('is-invalid');
+                const feedback = input.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.textContent = msg;
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>

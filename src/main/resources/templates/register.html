@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light d-flex justify-content-center align-items-center" style="height: 100vh;">
+<div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+  <h4 class="mb-3 text-center">Register</h4>
+
+  <form th:action="@{/register}" method="post">
+    <div class="mb-3">
+      <label for="nama" class="form-label">Nama</label>
+      <input type="text" class="form-control" name="nama" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" class="form-control" name="email" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" name="password" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="role" class="form-label">Role</label>
+      <select class="form-select" name="role" required>
+        <option value="" disabled selected>Pilih Role</option>
+        <option value="Staff">Staff</option>
+        <option value="Manager">Manager</option>
+        <option value="Direktur">Direktur</option>
+      </select>
+    </div>
+
+    <div class="d-grid mb-3">
+      <button type="submit" class="btn btn-success">Register</button>
+    </div>
+
+    <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+
+    <p class="text-center">Sudah punya akun? <a th:href="@{/login}">Login</a></p>
+  </form>
+</div>
+</body>
+</html>
